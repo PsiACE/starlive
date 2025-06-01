@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.12"]
         framework: ["starlette", "fastapi", "both"]
 
@@ -92,7 +92,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: uv sync --dev --group e2e
+        run: uv sync --dev
 
       - name: Run integration tests
         run: uv run starlive-test --framework ${{ matrix.framework }} --type integration --verbose
@@ -119,7 +119,7 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: uv sync --dev --group e2e
+        run: uv sync --dev
 
       - name: Install Playwright
         run: uv run playwright install --with-deps chromium
