@@ -9,6 +9,7 @@ applications with the same functionality, reducing code duplication.
 import argparse
 from typing import Union
 
+from fastapi import WebSocket
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.routing import Route
@@ -117,7 +118,7 @@ def create_fastapi_app(debug: bool = True, port: int = 8002) -> "FastAPI":
 
     # Add WebSocket route for StarLive
     @app.websocket(starlive.ws_route)
-    async def websocket_endpoint(websocket):
+    async def websocket_endpoint(websocket: WebSocket):
         await starlive._websocket_endpoint(websocket)
 
     @app.get("/", response_class=FastAPIHTMLResponse)

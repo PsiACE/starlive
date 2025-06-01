@@ -68,7 +68,7 @@ app.router.routes.append(starlive.create_websocket_route())
 ## FastAPI
 
 ```python
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, WebSocket
 from starlive import StarLive, StarLiveMiddleware
 
 starlive = StarLive()
@@ -76,7 +76,7 @@ app = FastAPI()
 app.add_middleware(StarLiveMiddleware, starlive=starlive)
 
 @app.websocket(starlive.ws_route)
-async def websocket_endpoint(websocket):
+async def websocket_endpoint(websocket: WebSocket):
     await starlive._websocket_endpoint(websocket)
 
 # Use same handlers as Starlette example

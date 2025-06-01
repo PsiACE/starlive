@@ -633,7 +633,7 @@ wheels = [
 
 [[package]]
 name = "starlive"
-version = "0.1.dev6+ga56cdaa.d20250601"
+version = "0.1.dev7+g590540c.d20250601"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
