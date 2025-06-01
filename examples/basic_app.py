@@ -160,8 +160,7 @@ def _handle_error(request: Request, error_message: str) -> HTMLResponse:
         if request.state.hypermedia_type == "htmx":
             # For HTMX, return error HTML with 400 status so hx-target-4xx can handle it
             return HTMLResponse(
-                f'<div class="error">{error_message}</div>',
-                status_code=400
+                f'<div class="error">{error_message}</div>', status_code=400
             )
         else:
             # For Turbo, update error container
