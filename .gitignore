@@ -14,3 +14,13 @@ wheels/
 .python-version
 
 .DS_Store
+
+# Test environment
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Test coverage
+coverage.xml
+coverage.json
+coverage.txt

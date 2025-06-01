@@ -1,19 +1,45 @@
-name: Lint and Test
+name: Test Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test:
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Lint code
+        run: |
+          uv run ruff check src/ tests/ examples/
+          uv run ruff format --check src/ tests/ examples/
+
+  unit-tests:
+    name: Unit Tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.12"]
+        framework: ["starlette", "fastapi", "both"]
 
     steps:
       - uses: actions/checkout@v4
@@ -29,15 +55,83 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        run: |
-          uv sync --dev
+        run: uv sync --dev
 
-      - name: Code check
-        run: |
-          uv run ruff check .
-          uv run ruff format --check .
+      - name: Validate environment
+        run: uv run starlive-test --validate-env
 
-      - name: Run tests
-        run: |
-          uv run playwright install --with-deps chromium
-          uv run pytest -xvs tests/
+      - name: Run unit tests
+        run: uv run starlive-test --framework ${{ matrix.framework }} --type unit --coverage --verbose
+
+      - name: Upload coverage to Codecov
+        if: matrix.framework == 'both' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ["starlette", "fastapi"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: uv sync --dev --group e2e
+
+      - name: Run integration tests
+        run: uv run starlive-test --framework ${{ matrix.framework }} --type integration --verbose
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ["starlette", "fastapi"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: uv sync --dev --group e2e
+
+      - name: Install Playwright
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: uv run starlive-test --framework ${{ matrix.framework }} --type e2e --verbose
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.framework }}
+          path: |
+            test-results/
+            playwright-report/

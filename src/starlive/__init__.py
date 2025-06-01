@@ -32,9 +32,7 @@ __all__ = [
 class StarLive:
     """Main StarLive application class for hypermedia integration."""
 
-    def __init__(
-        self, app: Optional[Starlette] = None, ws_route: str = "/starlive-stream"
-    ):
+    def __init__(self, ws_route: str = "/starlive-stream"):
         self.ws_route = ws_route
         self.user_id_callback: Callable[[], str] = self._default_user_id
 
@@ -44,13 +42,18 @@ class StarLive:
         self._stream_generator = StreamGenerator()
         self._detector = HypermediaDetector()
 
-        if app:
-            self.init_app(app)
+    def create_middleware(self):
+        """Create and return the StarLive middleware."""
+        return StarLiveMiddleware(self)
+
+    def create_websocket_route(self):
+        """Create and return the WebSocket route for real-time updates."""
+        return WebSocketRoute(self.ws_route, self._websocket_endpoint)
 
     def init_app(self, app: Starlette) -> None:
-        """Initialize StarLive with a Starlette application."""
+        """Initialize StarLive with a Starlette application (legacy method)."""
         # Add WebSocket route for real-time updates
-        websocket_route = WebSocketRoute(self.ws_route, self._websocket_endpoint)
+        websocket_route = self.create_websocket_route()
         app.router.routes.append(websocket_route)
 
         # Add middleware to detect hypermedia type and inject context
@@ -207,9 +210,9 @@ class StarLive:
 class StarLiveMiddleware(BaseHTTPMiddleware):
     """Middleware to inject StarLive context into requests."""
 
-    def __init__(self, app, starlive: StarLive):
+    def __init__(self, app, starlive: Optional[StarLive] = None):
         super().__init__(app)
-        self.starlive = starlive
+        self.starlive = starlive or StarLive()
 
     async def dispatch(self, request: Request, call_next):
         """Add StarLive context to the request state."""

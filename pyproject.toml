@@ -18,6 +18,10 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.scripts]
+starlive-test = "scripts.test:main"
+starlive-dev = "examples.app_factory:main"
+
 [build-system]
 requires = ["hatchling", "hatch-vcs>=0.3.0"]
 build-backend = "hatchling.build"
@@ -29,8 +33,13 @@ dev = [
     "pytest>=8.3.5",
     "pytest-asyncio>=0.25.3",
     "pytest-playwright>=0.4.4",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.6.0",
+    "pytest-timeout>=2.3.1",
+    "requests>=2.32.0",
     "ruff>=0.7.3",
     "uvicorn[standard]>=0.30.0",
+    "fastapi>=0.110.0",
 ]
 
 [tool.hatch.version]
@@ -38,7 +47,10 @@ source = "vcs"
 fallback-version = "0.0.0"
 
 [tool.hatch.build.targets.sdist]
-only-include = ["src/", "examples/", "tests/"]
+only-include = ["src/", "examples/", "tests/", "scripts/"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/starlive", "scripts", "examples"]
 
 [tool.ruff]
 line-length = 88
@@ -60,6 +72,9 @@ extend-ignore = ["B018", "B019", "B905"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["F811"]  # Ignore fixture redefinition warnings in tests
 
 [tool.pytest.ini_options]
 addopts = "--tb=short --strict-markers"
