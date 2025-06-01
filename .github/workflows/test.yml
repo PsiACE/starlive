@@ -39,4 +39,5 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run pytest -xvs tests/ 
+          uv run playwright install --with-deps chromium
+          uv run pytest -xvs tests/
