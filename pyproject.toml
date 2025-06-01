@@ -19,8 +19,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-starlive-test = "scripts.test:main"
-starlive-dev = "examples.app_factory:main"
+starlive-test = "starlive.cli:test_main"
+starlive-dev = "starlive.cli:dev_main"
 
 [build-system]
 requires = ["hatchling", "hatch-vcs>=0.3.0"]
@@ -50,7 +50,7 @@ fallback-version = "0.0.0"
 only-include = ["src/", "examples/", "tests/", "scripts/"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/starlive", "scripts", "examples"]
+packages = ["src/starlive"]
 
 [tool.ruff]
 line-length = 88
